@@ -3,9 +3,15 @@ import pandas as pd
 import random
 
 
-data = pd.read_csv('data/french_words.csv')
-to_learn = data.to_dict(orient='records')
 current_card = {}
+
+try:
+    data = pd.read_csv('data/words_to_learn.csv')
+except FileNotFoundError:
+    data = pd.read_csv('data/french_words.csv')
+
+to_learn = data.to_dict(orient='records')
+
 
 def next_card():
     global current_card, flip_timer
@@ -16,29 +22,20 @@ def next_card():
     canvas.itemconfig(card_bg, image=card_front)
     flip_timer = window.after(3000, func=flip_card)
 
-# def show_answer():
-#     window.after(3000)
-#     canvas.itemconfig(img_card_front, image=card_back)
-
-
-# def random_num(num):
-#     random_num = random.randint(0, len(num)-1)
-#     return random_num
-
-
-# def random_word():
-#     with open('data/french_words.csv') as file:
-#         df = pd.read_csv(file)
-#         new_word_french = df['French'][random_num(df['French'])]
-#         canvas.itemconfig(card_answer, text=new_word_french)
-#         canvas.itemconfig(card_title_new, text='Frenchhh')
-
 
 def flip_card():
-    # print('hello')
     canvas.itemconfig(card_title, text='English', fill='white')
     canvas.itemconfig(card_answer, text=current_card['English'], fill='white')
     canvas.itemconfig(card_bg, image=card_back)
+
+
+def remove_word():
+    # print(current_card)
+    to_learn.remove(current_card)
+    words_learned = pd.DataFrame.from_dict(to_learn)
+    words_learned.to_csv('data/words_to_learn.csv', index=False)
+    next_card()
+    
 
 BACKGROUND_COLOR = "#B1DDC6"
 
@@ -74,7 +71,7 @@ button_wrong = Button(image=img_wrong, highlightthickness=0, bg='white', command
 button_wrong.grid(column=0, row=1)
 
 img_right = PhotoImage(file='images/right.png')
-button_right = Button(image=img_right, highlightthickness=0, bg='white', command=next_card)
+button_right = Button(image=img_right, highlightthickness=0, bg='white', command=remove_word)
 button_right.grid(column=1, row=1)
 
 next_card()
